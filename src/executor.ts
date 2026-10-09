@@ -131,25 +131,27 @@ function tryPlanStep(
         source: "plan",
       };
     }
+    const slotIndex = state.findSlotForCard(step.card);
+    if (slotIndex == null) {
+      // Card not in hand — skip this step and try the next (do NOT freeze the bot).
+      planner.markStepDone(i);
+      continue;
+    }
+
     if (!state.canAfford(step.card)) {
+      // Wait for elixir only when the card is actually in hand.
       return {
         kind: "wait",
         reason: `plan_wait_elixir:${step.card}`,
         source: "plan",
       };
     }
-    const slotIndex = state.findSlotForCard(step.card);
-    if (slotIndex == null) {
-      // Card not in hand yet — wait/cycle
-      return {
-        kind: "wait",
-        reason: `plan_card_not_in_hand:${step.card}`,
-        source: "plan",
-      };
-    }
 
     const card = getCard(state.deck, step.card);
-    if (!card) continue;
+    if (!card) {
+      planner.markStepDone(i);
+      continue;
+    }
 
     let tile = step.tile;
     if (card.type === "spell") {
@@ -365,6 +367,16 @@ export function decideExecution(
     if (threatMax >= config.REACTIVE_THREAT_THRESHOLD) {
       const reactive = tryReactive(state, state.deck);
       if (reactive?.kind === "play") return reactive;
+    }
+    // If waiting only on elixir for a non-collector card, still allow calm pump
+    // when collector is in hand (avoids freezing on a stale defend step).
+    if (
+      fromPlan.reason.startsWith("plan_wait_elixir:") &&
+      !fromPlan.reason.includes("elixir_collector") &&
+      threatMax < 3
+    ) {
+      const pumpWhileWait = tryElixirPump(state, state.deck);
+      if (pumpWhileWait) return pumpWhileWait;
     }
     return fromPlan;
   }

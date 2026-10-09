@@ -9,6 +9,7 @@
       "type": "troop",
       "roles": ["support", "win_condition"],
       "targets": "ground",
+      "visual": "Round purple electric cannon on wheels, big spark coil on top, often purple evo glow. NOT a flying unit.",
       "usage": "Place BEHIND the king tower to charge safely. Core of the push — wait for Giant to tank in front before the bridge. Also drop on defense vs heavy tanks (Golem/Giant/PEKKA) when you can protect her charge.",
       "neverAlone": true,
       "preferredTiles": ["behind_king", "behind_king_left", "behind_king_right", "center_defense"]
@@ -20,6 +21,7 @@
       "type": "troop",
       "roles": ["tank", "win_condition"],
       "targets": "buildings",
+      "visual": "Huge pink/flesh tanky humanoid with small head, club, purple EVOLUTION border/glow. Tall body filling most of the card art. NOT the small Ice Wizard, NOT Mega Minion.",
       "usage": "MUST walk in front of Sparky before crossing the bridge. Place at the bridge or just in front of a charging Sparky so Sparky never leads. Also soak for counter-pushes after a good defense.",
       "neverAlone": false,
       "preferredTiles": ["bridge", "bridge_left", "bridge_right", "behind_king"]
@@ -31,6 +33,7 @@
       "type": "spell",
       "roles": ["spell_small"],
       "targets": "all",
+      "visual": "Yellow lightning bolt spell icon, often with evolution purple effect. Flat spell card, not a troop.",
       "radius": 2.5,
       "travelMs": 400,
       "minValueElixir": 2,
@@ -44,6 +47,7 @@
       "type": "troop",
       "roles": ["support", "air_defense", "bait"],
       "targets": "all",
+      "visual": "Blonde girl with pink dress and longbow, area-shot archer princess. Distinct from Ice Wizard (blue) and Musketeer.",
       "usage": "Chip at the bridge, defend swarms from a safe depth, support Sparky/Giant push from behind. Prefer opposite bridge or behind the tank — never dive alone into Log range if avoidable.",
       "preferredTiles": ["bridge", "bridge_left", "bridge_right", "behind_king", "lane_back_left", "lane_back_right"]
     },
@@ -54,6 +58,7 @@
       "type": "troop",
       "roles": ["support", "air_defense"],
       "targets": "all",
+      "visual": "Small blue wizard with icy staff and white/blue beard, freeze theme. Much smaller than Giant. NOT purple Mega Minion.",
       "usage": "Primary defensive slow. Place in front of the threatened tower or behind king to kite. Excellent support walking behind Giant/Sparky on offense.",
       "preferredTiles": ["front_princess_left", "front_princess_right", "behind_king", "center_defense"]
     },
@@ -64,6 +69,7 @@
       "type": "troop",
       "roles": ["swarm", "tank"],
       "targets": "ground",
+      "visual": "Group of multiple blonde shirtless barbarians with swords in one card art (swarm of 5).",
       "usage": "Surround tanks, Hog, Ram, or Royal Giant. Drop on the path of the threat (not stacked on the tower). Can counter-push if many survive.",
       "preferredTiles": ["front_princess_left", "front_princess_right", "center_defense", "kite_back"]
     },
@@ -74,6 +80,7 @@
       "type": "building",
       "roles": ["building", "cycle"],
       "targets": "none",
+      "visual": "Pink/purple elixir pump building with tank and pipes, generates elixir droplets. Building card, not a troop.",
       "usage": "PRIORITY in the first minutes: place at least one when the board is calm. Always farm behind king / safe tile when there is no urgent threat. Do NOT place if a big enemy push is already crossing — defend first.",
       "preferredTiles": ["behind_king", "behind_king_left", "behind_king_right", "lane_back_left", "lane_back_right"]
     },
@@ -84,6 +91,7 @@
       "type": "troop",
       "roles": ["support", "air_defense"],
       "targets": "all",
+      "visual": "Single FLYING purple/blue fat minion with bat wings, often purple EVOLUTION glow. Air unit — not Giant, not Ice Wizard, not ground.",
       "usage": "Air and mid-HP defense. Place in front of threatened tower or as flying support behind Giant/Sparky. Strong vs Balloons, lava pups, and support troops.",
       "preferredTiles": ["front_princess_left", "front_princess_right", "behind_king", "center_defense"]
     }

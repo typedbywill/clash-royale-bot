@@ -10,7 +10,7 @@ const IN_BATTLE_THRESHOLD = 0.55;
 function imageInput(
   dataUrl: string,
   text: string,
-  detail: "low" | "high" = "low",
+  detail: "low" | "high" = "high",
 ): DecisionCreateParams["input"] {
   return [
     {
@@ -21,6 +21,31 @@ function imageInput(
       ],
     },
   ];
+}
+
+const MIN_HAND_SLOT_CONFIDENCE = 0.4;
+
+/** Assign at most one slot per card id, preferring higher confidence. */
+function dedupeHandSlots(
+  hand: Array<string | null>,
+  confidence: number[],
+): { hand: Array<string | null>; handConfidence: number[] } {
+  const ranked = [0, 1, 2, 3]
+    .map((i) => ({ i, id: hand[i], conf: confidence[i] ?? 0 }))
+    .filter((s) => s.id && s.conf >= MIN_HAND_SLOT_CONFIDENCE)
+    .sort((a, b) => b.conf - a.conf);
+
+  const outHand: Array<string | null> = [null, null, null, null];
+  const outConf: number[] = [0, 0, 0, 0];
+  const used = new Set<string>();
+  for (const slot of ranked) {
+    const id = slot.id!;
+    if (used.has(id)) continue;
+    used.add(id);
+    outHand[slot.i] = id;
+    outConf[slot.i] = slot.conf;
+  }
+  return { hand: outHand, handConfidence: outConf };
 }
 
 function findAnswer<T extends Decision["answers"][number]["type"]>(

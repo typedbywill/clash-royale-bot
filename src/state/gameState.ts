@@ -65,6 +65,8 @@ export class GameState {
   enemyTowerDestroyedRight = false;
 
   enemyCardsSeen: string[] = [];
+  /** Sightings before a card is promoted to enemyCardsSeen (anti-hallucination). */
+  private enemyCardHits = new Map<string, number>();
   recentPlays: PlayRecord[] = [];
 
   constructor(deck: Deck) {
@@ -144,6 +146,7 @@ export class GameState {
     this.phase = "single_elixir";
     this.recentPlays = [];
     this.enemyCardsSeen = [];
+    this.enemyCardHits.clear();
   }
 
   private resetBattle(): void {
@@ -177,23 +180,50 @@ export class GameState {
   /**
    * Merge perceived hand with cycle model. High-confidence slots win;
    * unknown slots keep previous / cycle guess.
+   * Enforces uniqueness: a card can occupy at most one hand slot.
    */
   private mergeHand(
     perceived: Array<string | null>,
     confidence: number[],
   ): void {
-    const next: Array<string | null> = [...this.hand];
+    const MIN_CONF = 0.38;
+    const next: Array<string | null> = [null, null, null, null];
+
+    // Assign by descending confidence so strong reads win duplicate fights.
+    const ranked = [0, 1, 2, 3]
+      .map((i) => ({
+        i,
+        id: perceived[i] ?? null,
+        conf: confidence[i] ?? 0,
+      }))
+      .filter(
+        (s) =>
+          s.id &&
+          this.deck.cards.some((c) => c.id === s.id) &&
+          s.conf >= MIN_CONF,
+      )
+      .sort((a, b) => b.conf - a.conf);
+
+    const used = new Set<string>();
+    for (const slot of ranked) {
+      const id = slot.id!;
+      if (used.has(id)) continue;
+      used.add(id);
+      next[slot.i] = id;
+    }
+
+    // Keep previous unique cards in empty slots if still plausible (cycle).
     for (let i = 0; i < 4; i++) {
-      const id = perceived[i] ?? null;
-      const conf = confidence[i] ?? 0;
-      if (id && this.deck.cards.some((c) => c.id === id) && conf >= 0.3) {
-        next[i] = id;
+      if (next[i]) continue;
+      const prev = this.hand[i];
+      if (prev && !used.has(prev)) {
+        next[i] = prev;
+        used.add(prev);
       }
     }
+
     this.hand = next;
 
-    // Rebuild cycle: known hand first (order preserved), then remaining deck cards
-    // not in hand, preserving previous queue order when possible.
     const known = next.filter((id): id is string => id != null);
     const knownSet = new Set(known);
     const rest = this.cycle.filter((id) => !knownSet.has(id));
@@ -262,9 +292,24 @@ export class GameState {
     }
   }
 
-  noteEnemyCards(ids: string[]): void {
-    for (const id of ids) {
-      if (id && !this.enemyCardsSeen.includes(id)) {
+  /**
+   * Record possible enemy cards. Requires 2 independent sightings before
+   * promoting to enemyCardsSeen (stops one-shot planner hallucinations like fake X-Bow).
+   */
+  noteEnemyCards(ids: string[], opts?: { confirmed?: boolean }): void {
+    for (const raw of ids) {
+      const id = raw.trim().toLowerCase().replace(/\s+/g, "_");
+      if (!id || id === "unknown" || id === "none") continue;
+
+      if (opts?.confirmed) {
+        if (!this.enemyCardsSeen.includes(id)) this.enemyCardsSeen.push(id);
+        this.enemyCardHits.set(id, 99);
+        continue;
+      }
+
+      const hits = (this.enemyCardHits.get(id) ?? 0) + 1;
+      this.enemyCardHits.set(id, hits);
+      if (hits >= 2 && !this.enemyCardsSeen.includes(id)) {
         this.enemyCardsSeen.push(id);
       }
     }

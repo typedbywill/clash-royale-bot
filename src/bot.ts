@@ -99,21 +99,26 @@ export class BattleBot {
     this.session.noteEnemyCards(this.state.enemyCardsSeen);
     this.session.end();
 
-    // Snapshot for async debrief (session fields stay readable after end()).
-    if (this.debriefInFlight) return;
-    const session = this.session;
-    this.debriefInFlight = runBattleDebrief(session)
-      .catch((error) => {
+    const snapshot = this.session.cloneForDebrief();
+    this.planner.setMatchup(null);
+
+    const run = () =>
+      runBattleDebrief(snapshot).catch((error) => {
         const message = error instanceof Error ? error.message : String(error);
         console.error(`[memory] debrief error: ${message}`);
-      })
-      .then(() => undefined)
-      .finally(() => {
-        this.debriefInFlight = null;
       });
 
+    // Chain so we don't drop a report if a previous debrief is still running.
+    const task = (this.debriefInFlight ?? Promise.resolve())
+      .then(() => run())
+      .then(() => undefined);
+    this.debriefInFlight = task;
+    void task.finally(() => {
+      if (this.debriefInFlight === task) this.debriefInFlight = null;
+    });
+
     console.log(
-      `[memory] battle ended — debrief queued (enemy cards so far: ${session.enemyCards.join(", ") || "none"})`,
+      `[memory] battle ended — debrief queued (enemy cards so far: ${snapshot.enemyCards.join(", ") || "none"})`,
     );
   }
 

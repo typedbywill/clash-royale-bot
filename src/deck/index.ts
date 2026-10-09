@@ -39,10 +39,13 @@ export function getCard(deck: Deck, id: string): DeckCard | undefined {
 }
 
 export function cardChoices(deck: Deck): Array<{ value: string; description: string }> {
-  return deck.cards.map((card) => ({
-    value: card.id,
-    description: `${card.name} (${card.elixir} elixir, ${card.type}) — ${card.usage}`,
-  }));
+  return deck.cards.map((card) => {
+    const look = card.visual ? ` LOOKS LIKE: ${card.visual}.` : "";
+    return {
+      value: card.id,
+      description: `${card.name} (${card.elixir} elixir, ${card.type}).${look} ${card.usage}`,
+    };
+  });
 }
 
 export function deckSummary(deck: Deck): string {

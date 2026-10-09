@@ -44,6 +44,8 @@ export const deckCardSchema = z.object({
     .optional()
     .default("all"),
   usage: z.string().min(1),
+  /** Short visual cues for screenshot recognition (art, color, shape). */
+  visual: z.string().optional().default(""),
   neverAlone: z.boolean().optional().default(false),
   preferredTiles: z.array(preferredTileSchema).optional().default([]),
   /** Spell splash radius in tiles (Clash Royale units). */

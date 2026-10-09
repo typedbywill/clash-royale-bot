@@ -56,6 +56,23 @@ export class BattleSession {
     this.active = false;
   }
 
+  /** Snapshot for async debrief so a new battle can start without wiping data mid-call. */
+  cloneForDebrief(): BattleSession {
+    const copy = new BattleSession();
+    copy.active = false;
+    copy.startedAt = this.startedAt;
+    copy.startedAtMs = this.startedAtMs;
+    copy.ourDeckArchetype = this.ourDeckArchetype;
+    copy.enemyCards = [...this.enemyCards];
+    copy.ourPlays = [...this.ourPlays];
+    copy.planSnapshots = [...this.planSnapshots];
+    copy.threatSpikes = [...this.threatSpikes];
+    copy.intents = [...this.intents];
+    copy.matchup = this.matchup;
+    copy.lastDataUrl = this.lastDataUrl;
+    return copy;
+  }
+
   noteEnemyCards(ids: string[]): void {
     for (const id of ids) {
       const cleaned = id.trim();

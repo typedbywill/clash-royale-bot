@@ -8,9 +8,21 @@ Battle loop that captures the Android screen over ADB, **perceives** the board w
 2. Resize / JPEG compress
 3. **Perception** (Decisions API every tick) — hand card IDs, elixir, phase, lane threats, coarse push/cluster cells, tower flags
 4. **GameState** — elixir model, cycle rotation, memory
-5. **Planner** (Responses API, ~every 5s / on events) — structured plan with triggers
+5. **Planner** (Responses API, ~every 5s / on events) — structured plan with triggers + matchup memory
 6. **Executor** — plan steps, reactive counters from `deck.json`, spell lead, elixir gate
-7. `adb` tap/swipe/drag to deploy
+7. **Memory** — on battle end, debrief persists enemy style/strategy under `memory/`
+8. `adb` tap/swipe/drag to deploy
+
+### Opponent memory
+
+After each battle the bot writes:
+
+- `memory/battles/<id>.json` — per-match report (enemy cards, style, lessons, result)
+- `memory/matchups/<fingerprint>.json` — aggregated tips keyed by enemy deck fingerprint
+
+The planner loads the best matching matchup (exact fingerprint or ≥4 card overlap) and uses `counterStrategy` / `lessons` next time.
+
+To “forget” everything: `rm -rf memory/`.
 
 ## Setup
 
@@ -68,6 +80,7 @@ npm start
 | `PLANNER_MODEL` | `gpt-5.4-mini` | Reasoning planner |
 | `PLANNER_INTERVAL_MS` | `5000` | Min planner refresh |
 | `DECK_FILE` | `deck.json` | Deck knowledge |
+| `MEMORY_DIR` | `memory` | Battle + matchup persistence |
 | `ARENA_BOUNDS` | `0.08,0.12,0.92,0.78` | Playable grass rect |
 | `SCREENCAP_FORMAT` | `raw` | `raw` or `png` |
 | `BATTLE_LOOP_TOOL_CALL_MS` | `1500` | Min ms between ticks |
