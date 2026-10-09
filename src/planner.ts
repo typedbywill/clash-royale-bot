@@ -10,6 +10,7 @@ import {
 } from "./memory/index.js";
 import { getOpenAIClient } from "./openaiClient.js";
 import type { GameState } from "./state/gameState.js";
+import { formatWikiContext, loadWiki } from "./wiki/index.js";
 
 const triggerSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("now") }),
@@ -76,6 +77,7 @@ export class Planner {
   /** Injected matchup memory for the current opponent. */
   private matchup: MatchupMemory | null = null;
   private onPlanCreated: ((plan: BattlePlan) => void) | null = null;
+  private readonly wiki = loadWiki();
 
   constructor(deck: Deck) {
     this.deck = deck;
@@ -202,6 +204,12 @@ export class Planner {
         ].join("\n")
       : "\n(No prior matchup memory for this opponent yet.)\n";
 
+    const wikiBlock = formatWikiContext(
+      this.deck.cards.map((c) => c.id),
+      state.enemyCardsSeen,
+      this.wiki,
+    );
+
     const response = await getOpenAIClient().responses.parse({
       model: config.PLANNER_MODEL,
       input: [
@@ -219,12 +227,18 @@ export class Planner {
                 "Only use cards from the deck. Prefer 1–3 steps. Use triggers so the executor can wait for elixir/bridge crossings.",
                 "Defend first if a lane threat is high. Then counter-push.",
                 "When matchup memory is provided, prioritize its counterStrategy and lessons.",
+                "When CARD WIKI is provided, use strengths/weaknesses/counters to pick the right answer (e.g. Balloon → Mega Minion + Zap Bats).",
+                "ONLY list enemyCardsSeen for troops/buildings CLEARLY visible on the arena RIGHT NOW (with a unit sprite / HP bar).",
+                "NEVER invent or guess win conditions (no fake X-Bow, Inferno, Hog, etc.). If unsure, return enemyCardsSeen: [].",
+                "Plan steps MUST use cards that appear in the current hand from game state when possible.",
+                "If a needed card is not in hand, plan a different card that IS in hand — do not insist on missing cards.",
                 "DECK RULES (critical):",
                 "1) When calm early, plan elixir_collector behind the king (y≈26–28).",
                 "2) Combo: sparky BEHIND king first (y≈26–28), then giant IN FRONT of sparky (bridge y≈15–18) BEFORE sparky reaches the bridge. Never send sparky alone across.",
                 "3) Support behind the tank with princess / ice_wizard / mega_minion when elixir allows.",
                 "4) Defense priority: ice_wizard, mega_minion, princess, barbarians; sparky vs heavy tanks.",
                 "5) Cards marked neverAlone must not be placed near the bridge without a tank step first.",
+                "6) mega_minion = flying purple minion; giant = huge pink tank — do not confuse them.",
               ].join(" "),
             },
           ],
@@ -238,6 +252,8 @@ export class Planner {
                 deckSummary(this.deck),
                 "",
                 `Valid card ids: ${cardIds}`,
+                "",
+                wikiBlock,
                 matchupBlock,
                 "Current game state JSON:",
                 JSON.stringify(state.toPlannerSummary(), null, 2),
@@ -245,7 +261,7 @@ export class Planner {
                 `Previous plan: ${previous}`,
                 "",
                 "Return a fresh plan with tile coordinates and triggers.",
-                "Also list any enemy cards you can identify in enemyCardsSeen.",
+                "enemyCardsSeen: ONLY cards visibly on the board now, else []. Prefer steps using cards listed in hand.",
               ].join("\n"),
             },
             {

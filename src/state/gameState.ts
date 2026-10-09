@@ -162,6 +162,8 @@ export class GameState {
     this.enemyPushCell = null;
     this.enemyClusterCell = null;
     this.recentPlays = [];
+    this.enemyCardsSeen = [];
+    this.enemyCardHits.clear();
   }
 
   private tickElixir(dtMs: number): void {

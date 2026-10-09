@@ -77,12 +77,15 @@ function spellHasValue(cardId: string, state: GameState): boolean {
   const card = getCard(state.deck, cardId);
   if (!card || card.type !== "spell") return true;
   const minValue = card.minValueElixir ?? card.elixir;
-  // Heuristic: threat scores approximate elixir on board in that lane.
   const threatValue = Math.max(state.threatLeft, state.threatRight);
   const hasCluster = !!state.enemyClusterCell;
-  // Tower chip allowed in overtime with medium threat
+  // Tower chip / overtime
   if (state.phase === "overtime" && threatValue >= 2) return true;
-  return hasCluster && threatValue + (hasCluster ? 2 : 0) >= minValue;
+  // High lane pressure: allow Zap/Log even without a coarse cluster cell
+  // (Bats+Balloon often miss the cluster label but still need the spell).
+  if (threatValue >= 5) return true;
+  if (hasCluster && threatValue + 2 >= minValue) return true;
+  return false;
 }
 
 function placeForReactive(
@@ -291,7 +294,10 @@ function tryElixirPump(state: GameState, deck: Deck): ExecutedAction | null {
  * on a safe tile so we don't leak elixir at 10.
  */
 function tryCycle(state: GameState, deck: Deck): ExecutedAction | null {
-  if (state.elixir < 9) return null;
+  // Cycle earlier when collector isn't in hand so we don't leak at 8–10.
+  const collectorInHand = state.findSlotForCard("elixir_collector") != null;
+  const leakThreshold = collectorInHand ? 9 : 7.5;
+  if (state.elixir < leakThreshold) return null;
   if (Math.max(state.threatLeft, state.threatRight) >= 4) return null;
 
   const cycleCards = deck.cards

@@ -44,6 +44,7 @@ export class BattleSession {
     this.startedAtMs = nowMs;
     this.ourDeckArchetype = ourDeckArchetype;
     this.enemyCards = [];
+    this.enemyHits = new Map();
     this.ourPlays = [];
     this.planSnapshots = [];
     this.threatSpikes = [];
@@ -64,6 +65,7 @@ export class BattleSession {
     copy.startedAtMs = this.startedAtMs;
     copy.ourDeckArchetype = this.ourDeckArchetype;
     copy.enemyCards = [...this.enemyCards];
+    copy.enemyHits = new Map(this.enemyHits);
     copy.ourPlays = [...this.ourPlays];
     copy.planSnapshots = [...this.planSnapshots];
     copy.threatSpikes = [...this.threatSpikes];
@@ -73,10 +75,25 @@ export class BattleSession {
     return copy;
   }
 
-  noteEnemyCards(ids: string[]): void {
-    for (const id of ids) {
-      const cleaned = id.trim();
-      if (cleaned && !this.enemyCards.includes(cleaned)) {
+  private enemyHits = new Map<string, number>();
+
+  /**
+   * Require 2 sightings before recording (same anti-hallucination rule as GameState).
+   */
+  noteEnemyCards(ids: string[], opts?: { confirmed?: boolean }): void {
+    for (const raw of ids) {
+      const cleaned = raw.trim().toLowerCase().replace(/\s+/g, "_");
+      if (!cleaned || cleaned === "unknown" || cleaned === "none") continue;
+
+      if (opts?.confirmed) {
+        if (!this.enemyCards.includes(cleaned)) this.enemyCards.push(cleaned);
+        this.enemyHits.set(cleaned, 99);
+        continue;
+      }
+
+      const hits = (this.enemyHits.get(cleaned) ?? 0) + 1;
+      this.enemyHits.set(cleaned, hits);
+      if (hits >= 2 && !this.enemyCards.includes(cleaned)) {
         this.enemyCards.push(cleaned);
       }
     }

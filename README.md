@@ -24,6 +24,12 @@ The planner loads the best matching matchup (exact fingerprint or ≥4 card over
 
 To “forget” everything: `rm -rf memory/`.
 
+### Card wiki
+
+[`wiki/cards.json`](wiki/cards.json) holds strengths, weaknesses, counters and tips per card. Each planner call loads a **dynamic slice**: all of *your* deck cards + whatever enemy cards have been confirmed this battle (plus cross-match tips like “vs Balloon → Mega Minion”).
+
+Add new enemy cards to that file anytime — no code change needed.
+
 ## Setup
 
 ```bash
@@ -81,6 +87,7 @@ npm start
 | `PLANNER_INTERVAL_MS` | `5000` | Min planner refresh |
 | `DECK_FILE` | `deck.json` | Deck knowledge |
 | `MEMORY_DIR` | `memory` | Battle + matchup persistence |
+| `WIKI_FILE` | `wiki/cards.json` | Card strengths / counters wiki |
 | `ARENA_BOUNDS` | `0.08,0.12,0.92,0.78` | Playable grass rect |
 | `SCREENCAP_FORMAT` | `raw` | `raw` or `png` |
 | `BATTLE_LOOP_TOOL_CALL_MS` | `1500` | Min ms between ticks |

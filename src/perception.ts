@@ -104,8 +104,10 @@ function slotQuestion(
     name: `slot_${slot}`,
     instructions: [
       `Which card is in hand slot ${slot} (1=leftmost … 4=rightmost)?`,
-      "Look at the card art/name at the bottom of the screen.",
-      "Pick the matching card from THIS deck only. If unclear, pick the closest visual match.",
+      "Look carefully at the card ART in that slot only.",
+      "Each of the 8 deck cards appears in the hand at most ONCE — never pick the same card for two slots.",
+      "Use LOOKS LIKE cues: Giant = huge pink tank; Mega Minion = flying purple winged minion; Ice Wizard = small blue wizard; Sparky = wheeled purple cannon; Elixir Collector = pink pump building; Zap = lightning spell.",
+      "Pick ONLY from this deck. If unsure, choose the closest visual match among the 8.",
     ].join(" "),
     choices: cardChoices(deck),
   };
@@ -154,9 +156,13 @@ export async function perceiveBattle(
         "You are a Clash Royale vision system for a live battle screenshot.",
         "Our side is the BOTTOM half; enemy is the TOP. Hand is 4 cards at the bottom.",
         "Greyed-out cards cost more than current elixir.",
-        `Our deck archetype: ${deck.archetype}. Identify which deck cards are in each hand slot.`,
+        `Our deck archetype: ${deck.archetype}.`,
+        "Identify which of OUR 8 deck cards are in each hand slot using visual art (see LOOKS LIKE on each choice).",
+        "CRITICAL: the 4 hand slots must be 4 DIFFERENT cards — duplicates are impossible.",
+        "Do NOT invent enemy cards. Only describe what is visibly on the arena.",
         "Estimate elixir from the bar, threats per lane, and where enemy troops cluster.",
       ].join(" "),
+      "high",
     ),
     questions: [
       {
@@ -269,11 +275,15 @@ export async function perceiveBattle(
     const choice = typeof answer.choice === "string" ? answer.choice : null;
     const matched = answer.probabilities.find((p) => p.value === answer.choice);
     const conf = Math.max(answer.confidence, matched?.probability ?? 0);
-    if (choice && validIds.has(choice)) {
+    if (choice && validIds.has(choice) && conf >= MIN_HAND_SLOT_CONFIDENCE) {
       hand[slot - 1] = choice;
       handConfidence[slot - 1] = conf;
     }
   }
+
+  const deduped = dedupeHandSlots(hand, handConfidence);
+  hand.splice(0, 4, ...deduped.hand);
+  handConfidence.splice(0, 4, ...deduped.handConfidence);
 
   const elixirAnswer = findAnswer(decision, "elixir", "score");
   const { value: elixirVisual, confidence: elixirConfidence } =
