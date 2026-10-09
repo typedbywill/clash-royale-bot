@@ -3,6 +3,15 @@ import path from "node:path";
 import sharp from "sharp";
 import { getScreenSize, screencap } from "../src/adb.js";
 import {
+  ARENA_COLS,
+  ARENA_ROWS,
+  sampleGridTiles,
+  tileToNormalized,
+  tileToPixels,
+  TILE_SHORTCUTS,
+} from "../src/arena.js";
+import { config } from "../src/config.js";
+import {
   CARD_SLOTS,
   PLACEMENT_ZONES,
   toPixels,
@@ -41,40 +50,97 @@ async function main(): Promise<void> {
   console.log("Capturing screenshot for calibration...");
   const screen = await getScreenSize();
   const png = await screencap();
+  const bounds = config.ARENA_BOUNDS;
 
   printTable("CARD SLOTS (edit in src/layout.ts → CARD_SLOTS)", CARD_SLOTS, screen);
   printTable(
-    "PLACEMENT ZONES (edit in src/layout.ts → PLACEMENT_ZONES)",
+    "LEGACY PLACEMENT ZONES (kept as named shortcuts)",
     PLACEMENT_ZONES,
     screen,
   );
 
-  const markers = [
-    ...CARD_SLOTS.map((slot) => ({ ...slot, color: "#22c55e", kind: "slot" })),
-    ...PLACEMENT_ZONES.map((zone) => ({
-      ...zone,
-      color: "#3b82f6",
-      kind: "zone",
-    })),
+  console.log("\nARENA BOUNDS (edit ARENA_BOUNDS in .env as left,top,right,bottom)");
+  console.log(
+    `  left=${bounds.left} top=${bounds.top} right=${bounds.right} bottom=${bounds.bottom}`,
+  );
+  console.log(
+    `  grid=${ARENA_COLS}x${ARENA_ROWS}  corners(px): ` +
+      `TL=${JSON.stringify(tileToPixels({ x: 0, y: 0 }, screen))} ` +
+      `TR=${JSON.stringify(tileToPixels({ x: ARENA_COLS - 1, y: 0 }, screen))} ` +
+      `BL=${JSON.stringify(tileToPixels({ x: 0, y: ARENA_ROWS - 1 }, screen))} ` +
+      `BR=${JSON.stringify(tileToPixels({ x: ARENA_COLS - 1, y: ARENA_ROWS - 1 }, screen))}`,
+  );
+
+  const corners = [
+    { name: "arena_TL", ...tileToNormalized({ x: 0, y: 0 }) },
+    { name: "arena_TR", ...tileToNormalized({ x: ARENA_COLS - 1, y: 0 }) },
+    { name: "arena_BL", ...tileToNormalized({ x: 0, y: ARENA_ROWS - 1 }) },
+    { name: "arena_BR", ...tileToNormalized({ x: ARENA_COLS - 1, y: ARENA_ROWS - 1 }) },
   ];
 
-  const circles = markers
-    .map((marker) => {
-      const { x, y } = toPixels(marker, screen);
-      const r = marker.kind === "slot" ? 28 : 22;
+  const shortcutPoints: NamedPoint[] = Object.entries(TILE_SHORTCUTS).map(
+    ([name, tile]) => ({
+      name,
+      description: `tile (${tile.x},${tile.y})`,
+      ...tileToNormalized(tile),
+    }),
+  );
+
+  const gridDots = sampleGridTiles(2)
+    .map((tile) => {
+      const { x, y } = tileToPixels(tile, screen);
+      return `<circle cx="${x}" cy="${y}" r="4" fill="#f59e0b" fill-opacity="0.55"/>`;
+    })
+    .join("\n");
+
+  const cornerMarks = corners
+    .map((c) => {
+      const { x, y } = toPixels(c, screen);
       return `
-        <circle cx="${x}" cy="${y}" r="${r}" fill="${marker.color}" fill-opacity="0.45" stroke="#fff" stroke-width="3"/>
-        <text x="${x}" y="${y - r - 8}" text-anchor="middle" font-size="28" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${escapeXml(marker.name)}</text>
+        <circle cx="${x}" cy="${y}" r="18" fill="#ef4444" fill-opacity="0.7" stroke="#fff" stroke-width="3"/>
+        <text x="${x}" y="${y - 26}" text-anchor="middle" font-size="26" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${escapeXml(c.name)}</text>
       `;
     })
     .join("\n");
 
+  const slotMarks = CARD_SLOTS.map((slot) => {
+    const { x, y } = toPixels(slot, screen);
+    return `
+      <circle cx="${x}" cy="${y}" r="28" fill="#22c55e" fill-opacity="0.45" stroke="#fff" stroke-width="3"/>
+      <text x="${x}" y="${y - 36}" text-anchor="middle" font-size="28" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${escapeXml(slot.name)}</text>
+    `;
+  }).join("\n");
+
+  const shortcutMarks = shortcutPoints
+    .map((point) => {
+      const { x, y } = toPixels(point, screen);
+      return `
+        <circle cx="${x}" cy="${y}" r="14" fill="#3b82f6" fill-opacity="0.5" stroke="#fff" stroke-width="2"/>
+        <text x="${x}" y="${y - 18}" text-anchor="middle" font-size="18" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke">${escapeXml(point.name)}</text>
+      `;
+    })
+    .join("\n");
+
+  // Arena rectangle outline
+  const tl = tileToPixels({ x: 0, y: 0 }, screen);
+  const br = tileToPixels({ x: ARENA_COLS - 1, y: ARENA_ROWS - 1 }, screen);
+  const arenaRect = `
+    <rect x="${tl.x}" y="${tl.y}" width="${br.x - tl.x}" height="${br.y - tl.y}"
+      fill="none" stroke="#ef4444" stroke-width="4" stroke-dasharray="12 8"/>
+  `;
+
   const svg = `
     <svg width="${screen.width}" height="${screen.height}" xmlns="http://www.w3.org/2000/svg">
-      ${circles}
+      ${arenaRect}
+      ${gridDots}
+      ${shortcutMarks}
+      ${cornerMarks}
+      ${slotMarks}
       <text x="40" y="60" font-size="36" font-family="sans-serif" fill="#22c55e" stroke="#000" stroke-width="3" paint-order="stroke">green = card slots</text>
-      <text x="40" y="110" font-size="36" font-family="sans-serif" fill="#3b82f6" stroke="#000" stroke-width="3" paint-order="stroke">blue = placement zones</text>
-      <text x="40" y="160" font-size="28" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke">${screen.width}x${screen.height}</text>
+      <text x="40" y="110" font-size="36" font-family="sans-serif" fill="#ef4444" stroke="#000" stroke-width="3" paint-order="stroke">red = arena bounds / corners</text>
+      <text x="40" y="160" font-size="36" font-family="sans-serif" fill="#f59e0b" stroke="#000" stroke-width="3" paint-order="stroke">orange = ${ARENA_COLS}x${ARENA_ROWS} grid (step 2)</text>
+      <text x="40" y="210" font-size="36" font-family="sans-serif" fill="#3b82f6" stroke="#000" stroke-width="3" paint-order="stroke">blue = named tile shortcuts</text>
+      <text x="40" y="260" font-size="28" font-family="sans-serif" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke">${screen.width}x${screen.height} ARENA_BOUNDS=${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}</text>
     </svg>
   `;
 
@@ -90,16 +156,17 @@ async function main(): Promise<void> {
 
   console.log(`\nWrote ${outPath}`);
   console.log(`
-How to adjust card slots:
+How to adjust:
   1. Open debug/calibration.png
-  2. Green dots must sit in the CENTER of each hand card
-  3. Edit src/layout.ts → CARD_SLOTS (values are 0..1 of the screen)
-       dot too HIGH  → increase y   (e.g. 0.91 → 0.92)
-       dot too LOW   → decrease y
-       dot too LEFT  → increase x
-       dot too RIGHT → decrease x
+  2. Green dots → CENTER of each hand card (edit src/layout.ts CARD_SLOTS)
+  3. Red rectangle → should hug the playable arena (grass), not the UI
+       Edit ARENA_BOUNDS=left,top,right,bottom in .env (normalized 0..1)
+       too narrow left  → decrease left
+       too high top     → decrease top
+       too short bottom → increase bottom
   4. Re-run: npm run calibrate
   5. Smoke test: npm run test-launch -- card_2 left_bridge
+     Or tile: npm run test-launch -- card_1 tile:9,22
 `);
 }
 

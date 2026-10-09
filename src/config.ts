@@ -36,6 +36,8 @@ const envSchema = z.object({
   PLANNER_MODEL: z.string().default("gpt-5.4-mini"),
   PLANNER_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
   DECK_FILE: z.string().default("deck.json"),
+  /** Local dir for battle reports + matchup memory (relative to cwd). */
+  MEMORY_DIR: z.string().default("memory"),
   ARENA_BOUNDS: arenaBoundsSchema,
   SCREENCAP_FORMAT: z.enum(["raw", "png"]).default("raw"),
   BATTLE_LOOP_TOOL_CALL_MS: z.coerce.number().int().positive().default(1500),

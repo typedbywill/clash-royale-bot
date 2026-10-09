@@ -1,8 +1,13 @@
 /**
- * Manual launch smoke test (no Decisions API).
- * Usage: npx tsx scripts/test-launch.ts [card_1|card_2|card_3|card_4] [zone]
+ * Manual launch smoke test (no AI).
+ * Usage:
+ *   npx tsx scripts/test-launch.ts [card_1|…] [zone|tile:x,y]
+ * Examples:
+ *   npm run test-launch -- card_2 left_bridge
+ *   npm run test-launch -- card_1 tile:9,22
  */
 import { getScreenSize, launchCard } from "../src/adb.js";
+import { tileToPixels } from "../src/arena.js";
 import { config } from "../src/config.js";
 import {
   CARD_SLOTS,
@@ -14,13 +19,12 @@ import {
 
 async function main(): Promise<void> {
   const slotName = process.argv[2] ?? "card_1";
-  const zoneName = process.argv[3] ?? DEFAULT_FALLBACK_ZONE;
+  const target = process.argv[3] ?? DEFAULT_FALLBACK_ZONE;
 
   const slot = getCardSlot(slotName);
-  const zone = getPlacementZone(zoneName);
-  if (!slot || !zone) {
+  if (!slot) {
     console.error(
-      `Unknown slot/zone. slots=${CARD_SLOTS.map((s) => s.name).join(",")} zone=${zoneName}`,
+      `Unknown slot. slots=${CARD_SLOTS.map((s) => s.name).join(",")}`,
     );
     process.exitCode = 1;
     return;
@@ -28,10 +32,28 @@ async function main(): Promise<void> {
 
   const screen = await getScreenSize();
   const from = toPixels(slot, screen);
-  const to = toPixels(zone, screen);
+
+  let to: { x: number; y: number };
+  let label: string;
+
+  const tileMatch = /^tile:(\d+),(\d+)$/i.exec(target);
+  if (tileMatch) {
+    const tile = { x: Number(tileMatch[1]), y: Number(tileMatch[2]) };
+    to = tileToPixels(tile, screen);
+    label = `tile(${tile.x},${tile.y})`;
+  } else {
+    const zone = getPlacementZone(target);
+    if (!zone) {
+      console.error(`Unknown zone "${target}". Use a named zone or tile:x,y`);
+      process.exitCode = 1;
+      return;
+    }
+    to = toPixels(zone, screen);
+    label = target;
+  }
 
   console.log(
-    `Launch ${slotName} -> ${zoneName} via ${config.LAUNCH_METHOD} ` +
+    `Launch ${slotName} -> ${label} via ${config.LAUNCH_METHOD} ` +
       `(${from.x},${from.y}) -> (${to.x},${to.y}) delay=${config.CARD_SELECT_DELAY_MS}ms`,
   );
 

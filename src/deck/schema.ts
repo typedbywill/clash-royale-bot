@@ -30,6 +30,7 @@ export const preferredTileSchema = z.enum([
   "center_defense",
   "enemy_tower",
   "on_cluster",
+  "kite_back",
 ]);
 
 export const deckCardSchema = z.object({

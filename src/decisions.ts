@@ -1,3 +1,8 @@
+/**
+ * @deprecated Legacy two-call Decisions flow (pick slot → pick named zone).
+ * The live bot uses perception.ts + planner.ts + executor.ts instead.
+ * Kept for reference and possible offline experiments.
+ */
 import OpenAI from "openai";
 import type { Decision, DecisionCreateParams } from "openai/resources/decisions";
 import { assertOpenAIKey, config } from "./config.js";
@@ -24,12 +29,9 @@ function getClient(): OpenAI {
 const IN_BATTLE_THRESHOLD = 0.55;
 
 export type ActionDecision = {
-  /** Action after confidence / in_battle gates */
   action: ActionName;
-  /** Raw choice returned by the model (before gates) */
   rawChoice: ActionName | null;
   confidence: number;
-  /** Probability mass on the chosen option */
   choiceProbability: number;
   inBattleProbability: number;
   inBattle: boolean;
@@ -42,7 +44,6 @@ export type ActionDecision = {
 
 export type PlacementDecision = {
   zone: PlacementZoneName;
-  /** Raw zone from the model before gates */
   rawZone: PlacementZoneName | null;
   confidence: number;
   choiceProbability: number;
@@ -99,9 +100,6 @@ function asZoneName(value: string | boolean): PlacementZoneName | null {
   return null;
 }
 
-/**
- * First Decisions call: pick wait / card_1..card_4, plus in_battle + elixir.
- */
 export async function decideAction(dataUrl: string): Promise<ActionDecision> {
   const started = performance.now();
 
@@ -143,7 +141,6 @@ export async function decideAction(dataUrl: string): Promise<ActionDecision> {
         name: "elixir",
         instructions:
           "Estimate the player's current elixir from the elixir bar at the bottom of the screen.",
-        // Decisions API allows at most 10 score levels (elixir is 0..10 in-game).
         levels: [
           ...Array.from({ length: 9 }, (_, i) => ({
             label: String(i),
@@ -196,7 +193,6 @@ export async function decideAction(dataUrl: string): Promise<ActionDecision> {
     );
     choiceProbability = matched?.probability ?? 0;
 
-    // Gate on the chosen option's probability (more stable than confidence alone).
     const score = Math.max(confidence, choiceProbability);
     if (rawChoice && score >= config.MIN_ACTION_CONFIDENCE && inBattle) {
       action = rawChoice;
@@ -220,9 +216,6 @@ export async function decideAction(dataUrl: string): Promise<ActionDecision> {
   };
 }
 
-/**
- * Second Decisions call: where to place the chosen card.
- */
 export async function decidePlacement(
   dataUrl: string,
   slot: CardSlotName,
@@ -283,9 +276,6 @@ export async function decidePlacement(
   const choiceProbability = matched?.probability ?? 0;
   const score = Math.max(confidence, choiceProbability);
 
-  // Trust the model's zone whenever it returns one. Only cancel/fallback when
-  // score is below threshold AND policy says so — never silently remap to center
-  // while discarding a valid lane choice (that caused "everything in the middle").
   if (rawZone) {
     if (score < config.MIN_PLACEMENT_CONFIDENCE) {
       if (config.LOW_CONFIDENCE_PLACEMENT === "cancel") {

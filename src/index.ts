@@ -1,9 +1,15 @@
 import { listDevices } from "./adb.js";
 import { BattleBot } from "./bot.js";
 import { assertOpenAIKey, config } from "./config.js";
+import { loadDeck } from "./deck/index.js";
 
 async function main(): Promise<void> {
   assertOpenAIKey();
+
+  const deck = loadDeck();
+  console.log(
+    `Deck: ${deck.archetype} (${deck.cards.map((c) => c.name).join(", ")})`,
+  );
 
   const devices = await listDevices();
   if (devices.length === 0) {
@@ -25,7 +31,8 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `Using device: ${config.ADB_SERIAL || devices[0]} | model=${config.DECISIONS_MODEL}`,
+    `Using device: ${config.ADB_SERIAL || devices[0]} | ` +
+      `perception=${config.DECISIONS_MODEL} | planner=${config.PLANNER_MODEL}`,
   );
   console.warn(
     "Warning: automating Clash Royale may violate Supercell's Terms of Service. Prefer a side account / friendly battles.",

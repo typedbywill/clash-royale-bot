@@ -1,130 +1,128 @@
 {
-  "archetype": "hog_cycle",
-  "gameplan": "Press with Hog Rider on the bridge opposite the enemy push. Defend cheaply, then counter-push with leftover troops. Cycle efficiently; Fireball value for clustered support or tower + troops. Never dump Hog into a ready Inferno/building without baiting first.",
+  "archetype": "sparky_giant_beatdown",
+  "gameplan": "Early: place at least one Elixir Collector behind a princess/king when the lane is calm. Defense with Ice Wizard, Mega Minion, Princess, Barbarians; use Sparky vs tanks. Main combo: Sparky behind the king, then Giant IN FRONT of Sparky before the bridge — never let Sparky cross alone. Support with Princess / Ice Wizard / Mega Minion when elixir allows. Zap for swarms, Inferno reset, and sparky-stun value.",
   "cards": [
     {
-      "id": "hog_rider",
-      "name": "Hog Rider",
-      "elixir": 4,
+      "id": "sparky",
+      "name": "Sparky",
+      "elixir": 6,
       "type": "troop",
-      "roles": ["win_condition"],
+      "roles": ["support", "win_condition"],
+      "targets": "ground",
+      "usage": "Place BEHIND the king tower to charge safely. Core of the push — wait for Giant to tank in front before the bridge. Also drop on defense vs heavy tanks (Golem/Giant/PEKKA) when you can protect her charge.",
+      "neverAlone": true,
+      "preferredTiles": ["behind_king", "behind_king_left", "behind_king_right", "center_defense"]
+    },
+    {
+      "id": "giant",
+      "name": "Giant (Evo)",
+      "elixir": 5,
+      "type": "troop",
+      "roles": ["tank", "win_condition"],
       "targets": "buildings",
-      "usage": "Bridge pressure, preferably with a counter-push after a cheap defense. Avoid alone into buildings/Inferno.",
+      "usage": "MUST walk in front of Sparky before crossing the bridge. Place at the bridge or just in front of a charging Sparky so Sparky never leads. Also soak for counter-pushes after a good defense.",
       "neverAlone": false,
-      "preferredTiles": ["bridge", "bridge_left", "bridge_right"]
+      "preferredTiles": ["bridge", "bridge_left", "bridge_right", "behind_king"]
     },
     {
-      "id": "musketeer",
-      "name": "Musketeer",
-      "elixir": 4,
-      "type": "troop",
-      "roles": ["support", "air_defense"],
-      "targets": "all",
-      "usage": "Defend air and mid-HP troops; place behind king or in front of threatened tower. Support Hog on counter-push.",
-      "preferredTiles": ["behind_king", "front_princess_left", "front_princess_right", "center_defense"]
-    },
-    {
-      "id": "cannon",
-      "name": "Cannon",
-      "elixir": 3,
-      "type": "building",
-      "roles": ["building"],
-      "targets": "ground",
-      "usage": "Pull Hog/Giant/Ram toward the center. Place slightly off-center so both towers help.",
-      "preferredTiles": ["center_defense"]
-    },
-    {
-      "id": "ice_spirit",
-      "name": "Ice Spirit",
-      "elixir": 1,
-      "type": "troop",
-      "roles": ["cycle", "support"],
-      "targets": "all",
-      "usage": "Cycle card, freeze for tower shots, support Hog at the bridge, or reset Inferno briefly.",
-      "preferredTiles": ["bridge", "front_princess_left", "front_princess_right"]
-    },
-    {
-      "id": "skeletons",
-      "name": "Skeletons",
-      "elixir": 1,
-      "type": "troop",
-      "roles": ["cycle", "swarm"],
-      "targets": "ground",
-      "usage": "Cycle, kite single targets, surround tanks. Place on the path of the threat, not on the tower.",
-      "preferredTiles": ["front_princess_left", "front_princess_right", "kite_back"]
-    },
-    {
-      "id": "ice_golem",
-      "name": "Ice Golem",
-      "elixir": 2,
-      "type": "troop",
-      "roles": ["tank", "cycle"],
-      "targets": "buildings",
-      "usage": "Kite air/ground units to the king; tank for Hog at the bridge; death slow for defense.",
-      "preferredTiles": ["behind_king", "bridge", "lane_back_left", "lane_back_right"]
-    },
-    {
-      "id": "fireball",
-      "name": "Fireball",
-      "elixir": 4,
-      "type": "spell",
-      "roles": ["spell_medium"],
-      "targets": "all",
-      "radius": 2.5,
-      "travelMs": 1000,
-      "minValueElixir": 4,
-      "usage": "Hit clustered support (Musk, Wizard, Witch) or tower + troops. Lead moving units toward our towers.",
-      "preferredTiles": ["on_cluster", "enemy_tower"]
-    },
-    {
-      "id": "the_log",
-      "name": "The Log",
+      "id": "zap",
+      "name": "Zap (Evo)",
       "elixir": 2,
       "type": "spell",
       "roles": ["spell_small"],
-      "targets": "ground",
-      "radius": 1.0,
+      "targets": "all",
+      "radius": 2.5,
       "travelMs": 400,
       "minValueElixir": 2,
-      "usage": "Clear Goblin Barrel, swarms at the tower, or chip. Aim slightly in front of ground swarms walking down.",
-      "preferredTiles": ["on_cluster", "front_princess_left", "front_princess_right"]
+      "usage": "Reset Inferno Tower/Dragon, stun Sparky mirrors, clear Goblin Barrel / bats / skarmy at the tower, finish low HP. Aim on cluster or in front of ground swarms walking down.",
+      "preferredTiles": ["on_cluster", "front_princess_left", "front_princess_right", "enemy_tower"]
+    },
+    {
+      "id": "princess",
+      "name": "Princess",
+      "elixir": 3,
+      "type": "troop",
+      "roles": ["support", "air_defense", "bait"],
+      "targets": "all",
+      "usage": "Chip at the bridge, defend swarms from a safe depth, support Sparky/Giant push from behind. Prefer opposite bridge or behind the tank — never dive alone into Log range if avoidable.",
+      "preferredTiles": ["bridge", "bridge_left", "bridge_right", "behind_king", "lane_back_left", "lane_back_right"]
+    },
+    {
+      "id": "ice_wizard",
+      "name": "Ice Wizard",
+      "elixir": 3,
+      "type": "troop",
+      "roles": ["support", "air_defense"],
+      "targets": "all",
+      "usage": "Primary defensive slow. Place in front of the threatened tower or behind king to kite. Excellent support walking behind Giant/Sparky on offense.",
+      "preferredTiles": ["front_princess_left", "front_princess_right", "behind_king", "center_defense"]
+    },
+    {
+      "id": "barbarians",
+      "name": "Barbarians",
+      "elixir": 5,
+      "type": "troop",
+      "roles": ["swarm", "tank"],
+      "targets": "ground",
+      "usage": "Surround tanks, Hog, Ram, or Royal Giant. Drop on the path of the threat (not stacked on the tower). Can counter-push if many survive.",
+      "preferredTiles": ["front_princess_left", "front_princess_right", "center_defense", "kite_back"]
+    },
+    {
+      "id": "elixir_collector",
+      "name": "Elixir Collector",
+      "elixir": 6,
+      "type": "building",
+      "roles": ["building", "cycle"],
+      "targets": "none",
+      "usage": "PRIORITY in the first minutes: place at least one when the board is calm. Always farm behind king / safe tile when there is no urgent threat. Do NOT place if a big enemy push is already crossing — defend first.",
+      "preferredTiles": ["behind_king", "behind_king_left", "behind_king_right", "lane_back_left", "lane_back_right"]
+    },
+    {
+      "id": "mega_minion",
+      "name": "Mega Minion (Evo)",
+      "elixir": 3,
+      "type": "troop",
+      "roles": ["support", "air_defense"],
+      "targets": "all",
+      "usage": "Air and mid-HP defense. Place in front of threatened tower or as flying support behind Giant/Sparky. Strong vs Balloons, lava pups, and support troops.",
+      "preferredTiles": ["front_princess_left", "front_princess_right", "behind_king", "center_defense"]
     }
   ],
   "reactiveCounters": [
     {
+      "threat": "tank",
+      "use": ["sparky", "barbarians", "ice_wizard", "mega_minion"],
+      "place": "in_front_of_threatened_tower",
+      "minThreat": 5
+    },
+    {
+      "threat": "win_condition",
+      "use": ["barbarians", "ice_wizard", "mega_minion", "princess"],
+      "place": "kite_back",
+      "minThreat": 5
+    },
+    {
       "threat": "air_troop",
-      "use": ["musketeer", "ice_spirit"],
+      "use": ["mega_minion", "ice_wizard", "princess"],
       "place": "in_front_of_threatened_tower",
       "minThreat": 4
     },
     {
       "threat": "swarm",
-      "use": ["the_log", "fireball", "skeletons"],
+      "use": ["zap", "princess", "ice_wizard"],
       "place": "on_cluster",
-      "minThreat": 5
-    },
-    {
-      "threat": "win_condition",
-      "use": ["cannon", "ice_golem", "skeletons"],
-      "place": "kite_back",
-      "minThreat": 5
-    },
-    {
-      "threat": "tank",
-      "use": ["cannon", "skeletons", "ice_golem"],
-      "place": "in_front_of_threatened_tower",
-      "minThreat": 6
+      "minThreat": 4
     },
     {
       "threat": "any_push",
-      "use": ["cannon", "musketeer", "ice_golem"],
+      "use": ["ice_wizard", "mega_minion", "barbarians", "princess"],
       "place": "in_front_of_threatened_tower",
-      "minThreat": 7
+      "minThreat": 6
     }
   ],
   "phases": {
-    "single_elixir": "Defend first, chip with Hog when opponent is low on elixir. Cycle Ice Spirit / Skeletons.",
-    "double_elixir": "Faster Hog pressure and split pressure. Fireball value plays more often.",
-    "overtime": "Force Hog cycles; save Fireball for tower chip if needed to seal."
+    "single_elixir": "Open with Elixir Collector when calm (at least one early). Defend cheaply with Ice Wizard / Mega Minion / Princess / Barbs. Build Sparky behind king only when you can afford Giant to tank before the bridge. Never send Sparky alone.",
+    "double_elixir": "Faster Collector + bigger Sparky+Giant stacks. Support with Princess / Ice Wizard / Mega Minion behind the tank. Zap value on swarms and Inferno resets.",
+    "overtime": "Force the Sparky+Giant combo; defend desperately with Barbs/Ice Wiz/Mega Minion. Zap for clutch resets. Pump only if both lanes are completely empty."
   }
 }

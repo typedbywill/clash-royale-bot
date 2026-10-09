@@ -1,13 +1,13 @@
 {
   "name": "clash-royale-bot",
   "version": "1.0.0",
-  "description": "Clash Royale bot driven by OpenAI Decisions API + ADB",
+  "description": "Clash Royale bot: deck-aware planner + Decisions perception + ADB",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
-    "]": "tsx scripts/calibrate.ts",
+    "calibrate": "tsx scripts/calibrate.ts",
     "test-launch": "tsx scripts/test-launch.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
