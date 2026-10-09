@@ -18,7 +18,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "openai": "^7.30.0",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
