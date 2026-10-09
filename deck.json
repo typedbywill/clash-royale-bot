@@ -1,0 +1,130 @@
+{
+  "archetype": "hog_cycle",
+  "gameplan": "Press with Hog Rider on the bridge opposite the enemy push. Defend cheaply, then counter-push with leftover troops. Cycle efficiently; Fireball value for clustered support or tower + troops. Never dump Hog into a ready Inferno/building without baiting first.",
+  "cards": [
+    {
+      "id": "hog_rider",
+      "name": "Hog Rider",
+      "elixir": 4,
+      "type": "troop",
+      "roles": ["win_condition"],
+      "targets": "buildings",
+      "usage": "Bridge pressure, preferably with a counter-push after a cheap defense. Avoid alone into buildings/Inferno.",
+      "neverAlone": false,
+      "preferredTiles": ["bridge", "bridge_left", "bridge_right"]
+    },
+    {
+      "id": "musketeer",
+      "name": "Musketeer",
+      "elixir": 4,
+      "type": "troop",
+      "roles": ["support", "air_defense"],
+      "targets": "all",
+      "usage": "Defend air and mid-HP troops; place behind king or in front of threatened tower. Support Hog on counter-push.",
+      "preferredTiles": ["behind_king", "front_princess_left", "front_princess_right", "center_defense"]
+    },
+    {
+      "id": "cannon",
+      "name": "Cannon",
+      "elixir": 3,
+      "type": "building",
+      "roles": ["building"],
+      "targets": "ground",
+      "usage": "Pull Hog/Giant/Ram toward the center. Place slightly off-center so both towers help.",
+      "preferredTiles": ["center_defense"]
+    },
+    {
+      "id": "ice_spirit",
+      "name": "Ice Spirit",
+      "elixir": 1,
+      "type": "troop",
+      "roles": ["cycle", "support"],
+      "targets": "all",
+      "usage": "Cycle card, freeze for tower shots, support Hog at the bridge, or reset Inferno briefly.",
+      "preferredTiles": ["bridge", "front_princess_left", "front_princess_right"]
+    },
+    {
+      "id": "skeletons",
+      "name": "Skeletons",
+      "elixir": 1,
+      "type": "troop",
+      "roles": ["cycle", "swarm"],
+      "targets": "ground",
+      "usage": "Cycle, kite single targets, surround tanks. Place on the path of the threat, not on the tower.",
+      "preferredTiles": ["front_princess_left", "front_princess_right", "kite_back"]
+    },
+    {
+      "id": "ice_golem",
+      "name": "Ice Golem",
+      "elixir": 2,
+      "type": "troop",
+      "roles": ["tank", "cycle"],
+      "targets": "buildings",
+      "usage": "Kite air/ground units to the king; tank for Hog at the bridge; death slow for defense.",
+      "preferredTiles": ["behind_king", "bridge", "lane_back_left", "lane_back_right"]
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "elixir": 4,
+      "type": "spell",
+      "roles": ["spell_medium"],
+      "targets": "all",
+      "radius": 2.5,
+      "travelMs": 1000,
+      "minValueElixir": 4,
+      "usage": "Hit clustered support (Musk, Wizard, Witch) or tower + troops. Lead moving units toward our towers.",
+      "preferredTiles": ["on_cluster", "enemy_tower"]
+    },
+    {
+      "id": "the_log",
+      "name": "The Log",
+      "elixir": 2,
+      "type": "spell",
+      "roles": ["spell_small"],
+      "targets": "ground",
+      "radius": 1.0,
+      "travelMs": 400,
+      "minValueElixir": 2,
+      "usage": "Clear Goblin Barrel, swarms at the tower, or chip. Aim slightly in front of ground swarms walking down.",
+      "preferredTiles": ["on_cluster", "front_princess_left", "front_princess_right"]
+    }
+  ],
+  "reactiveCounters": [
+    {
+      "threat": "air_troop",
+      "use": ["musketeer", "ice_spirit"],
+      "place": "in_front_of_threatened_tower",
+      "minThreat": 4
+    },
+    {
+      "threat": "swarm",
+      "use": ["the_log", "fireball", "skeletons"],
+      "place": "on_cluster",
+      "minThreat": 5
+    },
+    {
+      "threat": "win_condition",
+      "use": ["cannon", "ice_golem", "skeletons"],
+      "place": "kite_back",
+      "minThreat": 5
+    },
+    {
+      "threat": "tank",
+      "use": ["cannon", "skeletons", "ice_golem"],
+      "place": "in_front_of_threatened_tower",
+      "minThreat": 6
+    },
+    {
+      "threat": "any_push",
+      "use": ["cannon", "musketeer", "ice_golem"],
+      "place": "in_front_of_threatened_tower",
+      "minThreat": 7
+    }
+  ],
+  "phases": {
+    "single_elixir": "Defend first, chip with Hog when opponent is low on elixir. Cycle Ice Spirit / Skeletons.",
+    "double_elixir": "Faster Hog pressure and split pressure. Fireball value plays more often.",
+    "overtime": "Force Hog cycles; save Fireball for tower chip if needed to seal."
+  }
+}
